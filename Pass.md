@@ -20,8 +20,10 @@
 ***
 # KeyCloak : 
 - User : admin
-- Pass : admin
+  - Pass : admin
 - User : seviper
   - Pass : Solgaleo
   - ID : dfc26d8a-6f7a-4e05-a4d1-ea07b0e60367
+- Client : oui
+  - Pass : test
 ***

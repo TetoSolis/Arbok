@@ -18,3 +18,7 @@
 - Pass : Solgaleo
 - IP : 192.168.1.3
 ***
+# KeyCloak : 
+- User : admin
+- Pass : admin
+***

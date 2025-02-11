@@ -6,8 +6,8 @@ url = "http://192.168.1.2:8080/realms/Abo/protocol/openid-connect/token"
 # Informations d'authentification
 data = {
     'grant_type': 'client_credentials',   # Type d'authentification
-    'client_id': 'test',          # Client ID défini dans Keycloak
-    'client_secret': 'y59Pr098w7YimT1oTgSDidALlB2YmBha'  # Secret Keycloak récupéré dans Clients > Credentials
+    'client_id': 'abra',          # Client ID défini dans Keycloak
+    'client_secret': 'lwGDExe8qiiKGDfM3FFA7hTmfA7W7qUU'  # Secret Keycloak récupéré dans Clients > Credentials
 }
 
 # En-têtes HTTP

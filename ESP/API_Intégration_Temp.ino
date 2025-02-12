@@ -1,73 +1,114 @@
 #include <WiFi.h>
-#include <WebServer.h>
+#include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <WebServer.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-const char* ssid = "Arbok";       // Remplace par ton réseau WiFi
-const char* password = "Solgaleo"; // Remplace par ton mot de passe
+#define SSID "Arbok"
+#define PASSWORD "Solgaleo"
+#define KEYCLOAK_URL "http://192.168.1.2:8080/realms/Abo/protocol/openid-connect/token"
+#define INTROSPECT_URL "http://192.168.1.2:8080/realms/Abo/protocol/openid-connect/token/introspect"
+#define CLIENT_ID "abra"
+#define CLIENT_SECRET "npJt8IhiugfKibw531qwLBUtTKPlBa5j"
+#define SCOPE "psyko"
 
-WebServer server(80);  // Création du serveur web sur le port 80
+// Définition de l'IP statique
+IPAddress local_IP(192, 168, 1, 5);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
 
-// Token Bearer attendu
-const String expectedToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJZYklaaDhOVF9SbGs5ZnFGZGFqVEtRXzBYSjdYbXV1WFhNeTZtWWw4SmlZIn0.eyJleHAiOjE3Mzg4NDg5NzUsImlhdCI6MTczODg0ODY3NSwianRpIjoiMzNmNGZmYjktYjU4OS00MTFiLWIwZTktNDczMmJiYzJmNTNjIiwiaXNzIjoiaHR0cDovLzE5Mi4xNjguMS4yOjgwODAvcmVhbG1zL0VzcF9BcGkiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiNDI5YWE0NDEtNGE0Yi00YzMwLThjZjYtNGQ1M2VlOTk5NWI0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZXNwLWNsaWVudCIsInNpZCI6IjMyNDI3YmM1LTc1NmYtNDRhMC04NWNkLWY2NmZlNTJlNmZlYSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovLzE5Mi4xNjguMS4xMzciXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwiZGVmYXVsdC1yb2xlcy1lc3BfYXBpIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6ImVtYWlsIHByb2ZpbGUiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6InRoZW8gbWFyY2hhbmQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJlc3AtdXNlciIsImdpdmVuX25hbWUiOiJ0aGVvIiwiZmFtaWx5X25hbWUiOiJtYXJjaGFuZCIsImVtYWlsIjoidGhlby5tYXJjaGFuZDA5MTRAZ21haWwuY29tIn0.HEjW2bH8a8KLPGDIS4t6CbWI5cdvHAV1V8EpNiZU30bAEdZ93yngxKsfD_2LlnS2HihWsukoFkcN3PgjvfZFnyQXZBPqLwHUWLDB2gSD1qxgXzlwpCvh3GD9lcgFPsasmQw406oT-Ft9Ywy4l1IIz7pQXaKqhKJ-6vJCxbEKqe1f3k6xPwU-RFh7oK6e84wDHJEehOOePY24Ame3lKUK-uwT1pNrm49X1OvTjlscst0UwdnS20NKowfThXLEtPCAg8_Aoo3ca4iMwc71q922ci6BUr9tViOb16UU7ImDAwvY6uCIEoKjZcPPXV_9MUMuIl5_kb_LnGg90rH4oHD0HA"; 
+WebServer server(80);
 
-// Initialisation du capteur de température
-float temp = 0.0;
-const int oneWireBus = 21;  // Pin pour le bus 1-wire
+// Capteur de température DS18B20 (OneWire sur GPIO 21)
+const int oneWireBus = 21;
 OneWire oneWire(oneWireBus);
 DallasTemperature sensors(&oneWire);
 
-// Route principale - Affiche la température
-void handleTemperature() {
-    // Vérifie si le token Bearer est correct
-    if (server.header("Authorization") != "Bearer " + expectedToken) {
-        server.send(401, "application/json", "{\"error\": \"Unauthorized\"}");
+bool validateToken(const String &token) {
+    HTTPClient http;
+    http.begin(INTROSPECT_URL);
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    String postData = "client_id=" + String(CLIENT_ID) +
+                      "&client_secret=" + String(CLIENT_SECRET) +
+                      "&token=" + token;
+
+    int httpCode = http.POST(postData);
+    if (httpCode == 200) {
+        DynamicJsonDocument doc(1024);
+        deserializeJson(doc, http.getString());
+        bool active = doc["active"];
+        http.end();
+        return active;
+    }
+    http.end();
+    return false;
+}
+
+void handleRoot() {
+    if (!server.hasHeader("Authorization")) {
+        server.send(401, "text/plain", "Unauthorized");
         return;
     }
-
-    // Lecture de la température
-    sensors.requestTemperatures();
-    temp = sensors.getTempCByIndex(0);
-
-    if (temp == -127.0) {
-        server.send(500, "application/json", "{\"error\": \"Erreur de lecture du capteur\"}");
+    String authHeader = server.header("Authorization");
+    if (!authHeader.startsWith("Bearer ")) {
+        server.send(401, "text/plain", "Invalid Authorization Header");
         return;
     }
+    String token = authHeader.substring(7);
+    if (validateToken(token)) {
+        // Lecture de la température
+        sensors.requestTemperatures();
+        float temperature = sensors.getTempCByIndex(0);
 
-    // Création d'un JSON avec la température
-    StaticJsonDocument<200> doc;
-    doc["message"] = "Température récupérée avec succès";
-    doc["temperature"] = temp;
+        if (temperature == -127.0) {
+            server.send(500, "application/json", "{\"error\": \"Erreur de lecture du capteur\"}");
+            return;
+        }
 
-    String responseBody;
-    serializeJson(doc, responseBody);
+        // Création d'un JSON avec la température
+        DynamicJsonDocument doc(200);
+        doc["message"] = "Température récupérée avec succès";
+        doc["temperature"] = temperature;
 
-    server.send(200, "application/json", responseBody);
+        String responseBody;
+        serializeJson(doc, responseBody);
+
+        server.send(200, "application/json", responseBody);
+    } else {
+        server.send(403, "text/plain", "Forbidden");
+    }
 }
 
 void setup() {
     Serial.begin(115200);
 
-    // Connexion WiFi
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+    // Configuration de l'IP statique
+    if (!WiFi.config(local_IP, gateway, subnet)) {
+        Serial.println("⚠️ Erreur lors de l'attribution de l'IP statique !");
     }
-    Serial.println("\nWiFi connecté !");
-    Serial.print("Adresse IP de l'ESP32 : ");
+
+    // Connexion WiFi
+    WiFi.begin(SSID, PASSWORD);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(1000);
+        Serial.println("📡 Connexion au WiFi...");
+    }
+
+    Serial.println("✅ WiFi connecté !");
+    Serial.print("📡 Adresse IP de l'ESP32 : ");
     Serial.println(WiFi.localIP());
 
     // Initialisation du capteur de température
     sensors.begin();
 
     // Définition de la route REST
-    server.on("/", HTTP_GET, handleTemperature);
-
+    server.on("/", HTTP_GET, handleRoot);
+    
     // Démarrage du serveur
     server.begin();
-    Serial.println("Serveur API REST démarré !");
+    Serial.println("🌐 Serveur API REST démarré !");
 }
 
 void loop() {

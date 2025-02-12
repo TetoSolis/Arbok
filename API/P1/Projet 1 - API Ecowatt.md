@@ -1,4 +1,3 @@
-***
 # Rapport Travail 1 : Intégration des APIs Ecowatt et Météo France avec OAuth2
 
 ## 🔹 Introduction
@@ -35,9 +34,7 @@ def get_oauth_token():
 
 ### 🔍 Explication
 
-- Une requête **POST** est envoyée avec les **identifiants OAuth2 encodés en Base64**.
-- Si la réponse est **200 OK**, le **token d'accès** est extrait.
-- En cas d'erreur, un message explicatif est affiché.
+L'API Ecowatt nécessite une authentification OAuth2 pour accéder aux données. Une fonction a été mise en place pour récupérer un **jeton d'accès (access token)** à partir de l'endpoint d'authentification fourni par RTE. Une requête **POST** est envoyée avec les **identifiants OAuth2 encodés en Base64**. Si la réponse est **200 OK**, le **token d'accès** est extrait. En cas d'erreur, un message explicatif est affiché. Le code implémenté permet de gérer cette authentification et de renvoyer un jeton valide pour les appels ultérieurs à l'API Ecowatt.
 
 ---
 
@@ -83,9 +80,7 @@ def fetch_ecowatt_data(token, file_path):
 
 ### 🔍 Explication
 
-- Une requête **GET** est envoyée avec le **token d'accès**.
-- Les données JSON sont **sauvegardées localement** dans `ecowatt.json`.
-- Un **système de gestion des erreurs** avec 5 tentatives est intégré pour éviter les **erreurs 429 (Trop de requêtes)**.
+Une fois l'utilisateur authentifié, il devient possible de récupérer les **signaux Ecowatt** indiquant les pics de consommation d'électricité. Pour ce faire, une requête **GET** est envoyée à l'API Ecowatt en incluant le **token d'accès** dans l'en-tête de la requête. Les données récupérées, au format JSON, sont ensuite sauvegardées localement dans un fichier `ecowatt.json`. Le code inclut également un mécanisme de gestion des erreurs. Si le serveur renvoie une erreur de type **429 (Trop de requêtes)**, la fonction attend un délai et tente à nouveau jusqu'à un maximum de 5 tentatives. Cela permet d'éviter d'éventuels blocages dus à une surcharge de requêtes. En cas d'autres erreurs, un message explicatif est fourni.
 
 ---
 
@@ -135,11 +130,9 @@ def analyze_ecowatt_data(file_path):
 
 ### 🔍 Explication
 
-- Une **liste chaînée** est utilisée pour stocker les périodes critiques.
-- Les créneaux horaires sont affichés dans la console.
+Les données récupérées doivent ensuite être analysées pour identifier les périodes de **tension électrique**. Pour cela, une structure de données sous forme de **liste chaînée** a été utilisée. Chaque nœud de cette liste représente une période de faible consommation, identifiée par la combinaison du jour et de l'heure. L'implémentation permet de parcourir les données récupérées et d'ajouter les créneaux horaires correspondants dans la liste chaînée. Une fois la liste complétée, les créneaux sont affichés à l'écran, ce qui permet d'identifier rapidement les périodes critiques.
 
----
-
+***
 ## 🔹 Conclusion
 
 Ce travail nous a permis de mettre en place une **authentification sécurisée** avec OAuth2, d'effectuer des requêtes vers l'API **Ecowatt de RTE**, et d'analyser les signaux récupérés.
@@ -149,10 +142,5 @@ Ce travail nous a permis de mettre en place une **authentification sécurisée**
 - Récupération du **token OAuth2**.
 - Téléchargement des **signaux Ecowatt** en JSON.
 - Analyse et extraction des périodes critiques.
-
-📌 **Améliorations possibles :**
-
-- Intégrer l'API de **Météo France** pour croiser les données.
-- Stocker les résultats dans une **base de données** pour une analyse plus approfondie.
 
 🚀 **Prochaine étape :** Intégration du délestage énergétique avec Phidget !

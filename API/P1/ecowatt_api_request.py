@@ -6,7 +6,7 @@ import time
 file = "ecowatt.json"
 
 # Token d'accès (remplace par un token valide si nécessaire)
-token = "4WtoA7oY30PPlHc4Ihcl7PYlMlDvIrx66WPcbUiATomYydBl666tbT"
+token = "466Cww165KVW6f1nohjMQwqmQWnUd2C7AXTOHQjcxRp7AcoRW9CMWX"
 
 # URL de l'API Ecowatt
 url = "https://digital.iservices.rte-france.com/open_api/ecowatt/v5/signals"

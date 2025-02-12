@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Integration</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        async function fetchData() {
+            try {
+                // Étape 1 : Obtenez un token d'accès
+                const tokenResponse = await fetch('http://192.168.1.2:8080/realms/Abo/protocol/openid-connect/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'grant_type': 'client_credentials',
+                        'client_id': 'abra',
+                        'client_secret': 'npJt8IhiugfKibw531qwLBUtTKPlBa5j',
+                    }),
+                });
+
+                const tokenData = await tokenResponse.json();
+                console.log("Token : ", tokenData.access_token);
+                if (!tokenData.access_token) {
+                    throw new Error('Erreur d\'authentification, token manquant.');
+                }
+
+                // Étape 2 : Utiliser le token pour appeler l'API
+                const apiResponse = await fetch('http://192.168.1.3:5000/counter', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${tokenData.access_token}`,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (apiResponse.status === 200) {
+                    const counterData = await apiResponse.json();
+                    console.log('Données reçues :', counterData);
+                    
+                    // Étape 3 : Mettre à jour l'interface avec les données du compteur
+                    document.getElementById('counter').textContent = counterData.counter || '--';
+                } else if (apiResponse.status === 429) {
+                    console.error('Trop de requêtes. Réessayez plus tard.');
+                } else {
+                    console.error(`Erreur API: ${apiResponse.status}`);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la requête:', error);
+            }
+        }
+
+        // Appel initial de la fonction
+        fetchData();
+    </script>
+</head>
+<body>
+    <div class="flex-title">
+        <p class="title2">API-ESP</p>
+        <p class="title2">API-RASP</p>
+    </div>
+    <div class="flex-title">
+        <!-- Bouton cliquable avec l'ID 'counter' -->
+        <button id="counter" class="title2" onclick="fetchData()">--</button>
+    </div>
+</body>
+</html>

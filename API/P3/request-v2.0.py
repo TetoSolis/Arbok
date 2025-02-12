@@ -8,7 +8,7 @@ url = "http://192.168.1.2:8080/realms/Abo/protocol/openid-connect/token"
 data = {
     'grant_type': 'client_credentials',   # Type d'authentification
     'client_id': 'abra',          # Client ID défini dans Keycloak
-    'client_secret': 'lwGDExe8qiiKGDfM3FFA7hTmfA7W7qUU'  # Secret Keycloak récupéré dans Clients > Credentials
+    'client_secret': 'npJt8IhiugfKibw531qwLBUtTKPlBa5j'  # Secret Keycloak récupéré dans Clients > Credentials
 }
 
 # En-têtes HTTP
@@ -34,7 +34,7 @@ else:
 token = infos_rte_token['access_token']
 #token = ''
 # URL de l'API Ecowatt
-url = "http://localhost:5000/api"
+url = "http://192.168.1.5:80/"
 
 # Headers corrigés
 headers = {
@@ -43,7 +43,7 @@ headers = {
 }
 
 # Tentative avec gestion du 429 Too Many Requests
-max_retries = 5
+max_retries = 1
 retry_delay = 10  # Attendre 10 secondes en cas de 429
 for attempt in range(max_retries):
     response = requests.get(url, headers=headers)

@@ -1,7 +1,7 @@
 import requests
-url = "http://api"
+url = "https://digital.iservices.rte-france.com/token/oauth"
 data = {
-    'Authorization': 'Basic y59Pr098w7YimT1oTgSDidALlB2YmBha==',
+    'Authorization': 'Basic OTRlMDkyZjctMjYyYS00NTIwLWFmYTctNDcwNGJlYjAwNjEyOjVmNjYyMTY1LWQ2MDctNGI3Ny1hNjYzLTc0Y2U0NzRlMDc1ZA==',
     'Content-Type': 'application/x-www-form-urlencoded',
 }
 response = requests.post(url, headers=data)

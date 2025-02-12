@@ -46,7 +46,7 @@ def verify_token(token):
         # Si l'introspection échoue, on retourne False
         return False
 
-@app.route('/api', methods=['GET'])
+@app.route('/counter', methods=['GET'])
 def api():
     global counter  # Utilisation de la variable globale counter
 

@@ -1,8 +1,11 @@
 import json
+import os
 
 # Charger les données JSON
-file = "ecowatt.json"
-with open(file, "r", encoding="utf-8") as f:
+file = "\\ecowatt.json"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+with open( script_dir+file, "r", encoding="utf-8") as f:
     data = json.load(f)
 
 # Liste chaînée pour stocker les résultats

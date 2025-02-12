@@ -1,118 +1,91 @@
-# Arbok
+# Arbok 🚀
 
-## Description
+**Arbok** est un projet IoT qui intègre plusieurs API et modules afin de gérer des équipements électriques et surveiller la consommation d'énergie 🌍. Ce projet utilise des technologies comme **OAuth2** 🔐 pour sécuriser les échanges, l'**API Ecowatt** de RTE ⚡, et des relais **Phidget** pour contrôler des appareils à forte consommation d'énergie. Le projet est structuré en plusieurs parties pour permettre une gestion efficace de l'énergie et un contrôle sécurisé des équipements.
 
-Arbok est un projet IoT ayant pour objectif de mettre en place un réseau sécurisé d'objets connectés répondant à un cahier des charges précis. Il s'inscrit dans le cadre de la SAÉ 6.IOM.01 du BUT Réseaux et Télécommunications, parcours Internet des Objets et Mobilités (IoM). Ce projet implique plusieurs technologies, notamment OAuth2, LoRa, MQTT et la connectivité par satellite avec Kinéis.
-
-## Objectifs
-
-1. **Sécurisation d'un objet connecté**
-    
-    - Implémentation d'OAuth2 sur un Raspberry Pi et un ESP32
-        
-    - Sécurisation des échanges avec l'API Ecowatt et l'API Météo France
-        
-    - Utilisation du module Phidget Interface Kit 0/0/8 P/N 1017 pour piloter des relais
-        
-2. **Interrogation d'un onduleur virtuel**
-    
-    - Expérimentation et mise en place d'une solution de gestion de l'énergie
-        
-3. **Interconnexion de deux maisons via une passerelle LoRa**
-    
-    - Utilisation des bornes MikroTik et du réseau The Things Network (TTN)
-        
-4. **Passerelle satellite avec carte Kinéis**
-    
-    - Mesure de température et niveau d'une retenue d'eau
-        
-    - Connexion de deux maisons séparées par une montagne
-        
-    - Implémentation d'une redondance des communications (LoRa / Kinéis) en mode normal et dégradé
-        
-    - Comparaison des performances (délai de réception...)
-        
-    - Ajout d'une seconde borne MikroTik pour redondance et enregistrement des données sur TTN
-        
-5. **Plateforme Octeus et IoT-Lab (expérimentation)**
-    
-    - Étude de l'interopérabilité avec des infrastructures existantes
-        
-
-## Technologies utilisées
-
-- **ESP32 / ESP8266 / Raspberry Pi**
-    
-- **OAuth2** pour l'authentification et la sécurisation des accès
-    
-- **APIs Ecowatt et Météo France**
-    
-- **LoRa / The Things Network** pour la communication longue portée
-    
-- **Kinéis (IoT par satellite)**
-    
-- **MQTT** pour l'échange de données
-    
-- **Phidget Interface Kit** pour le pilotage d'actionneurs
-    
-
-## Installation et Configuration
-
-### Prérequis
-
-- Un ESP32, ESP8266 ou Raspberry Pi
-    
-- Une connexion Internet
-    
-- Accès aux APIs (Ecowatt, Météo France, Kinéis)
-    
-- Un module LoRa compatible TTN
-    
-- Un compte TTN et MikroTik configuré
-    
-
-### Étapes d'installation
-
-6. Cloner le dépôt GitHub :
-    
-    ```
-    git clone https://github.com/votre-repo/arbok.git
-    cd arbok
-    ```
-    
-7. Installer les dépendances requises (Python, Node.js, etc.).
-    
-8. Configurer les fichiers d'authentification OAuth2.
-    
-9. Déployer les scripts sur les équipements IoT.
-    
-
-## Structure du projet
+## Arborescence du projet 📂
 
 ```
-/arbok
-│── /firmware          # Code pour ESP32/ESP8266
-│── /server            # Backend (authentification, API sécurisées)
-│── /gateway           # Configuration LoRa et Kinéis
-│── /docs              # Documentation et ressources
-│── README.md          # Documentation principale
+Arbok/
+├── API
+│   ├── P1
+│   │   ├── auth.py                 # Récupère le token OAuth2
+│   │   ├── ecowatt_api_request.py   # Effectue une requête à l'API Ecowatt et l'enregistre dans ecowatt.json
+│   │   ├── ecowatt.json             # Données récupérées de l'API Ecowatt
+│   │   └── jsonreader.py            # Traite les données récupérées de l'API Ecowatt
+│   ├── P2
+│   │   ├── API-DelestageV-0.1.py    # Permet d'éteindre et allumer un relais Phidget via un site web
+│   │   ├── delestage_pilotage_phidget.py  # Permet de contrôler un relais Phidget
+│   │   └── delestage_pilotage_phidget_v2.py # Permet de contrôler un relais Phidget via les touches du clavier
+│   └── P3
+│       ├── BasicAPI-v0.1.py        # Serveur permettant des requêtes simples
+│       ├── BasicAPI-v2.0.py        # Serveur permettant des requêtes authentifiées
+│       ├── counter.txt             # Compte le nombre de requêtes
+│       ├── Oauth2onRaspberry.md    # Guide pour implémenter OAuth2 sur un Raspberry Pi
+│       ├── __pycache__
+│       │   └── requests.cpython-311.pyc
+│       ├── request-v0.1.py         # Permet des requêtes sans authentification
+│       ├── request-v2.0.py         # Permet des requêtes avec authentification
+│       └── TokenAccess.py          # Permet de récupérer un token OAuth2
+├── ESP
+│   ├── BasicAPI-v0.1              # Serveur de requêtes simple pour ESP
+│   │   └── BasicAPI-v0.1.ino
+│   ├── BasicAPI-v1.0              # Serveur de requêtes simple pour ESP
+│   │   └── BasicAPI-v1.0.ino
+│   ├── BasicAPI-v1.1              # Serveur de requêtes simple pour ESP
+│   │   └── BasicAPI-v1.1.ino
+│   ├── TempAPI-v2.1               # Serveur de requêtes avec authentification et capteur de température
+│   │   └── TempAPI-v2.1.ino
+│   ├── Temp-v0.1                  # Capteur de température
+│   │   └── Temp-v0.1.ino
+│   ├── Temp-v1.0                  # Capteur de température
+│   │   └── Temp-v1.0.ino
+│   └── Temp-v2.0                  # Capteur de température
+│       └── Temp-v2.0.ino
+├── Pass.md                        # Fichier contenant des informations de connexion sécurisées
+├── README.md                      # Ce fichier
+└── WEB
+    ├── API.html                  # Interface web pour effectuer des requêtes API vers Raspberry Pi et ESP
+    ├── delestage.html             # Interface pour contrôler le délestage des équipements
+    └── style.css                  # Fichier CSS pour le style des pages web
 ```
 
-## Contributions
+## Description des fonctionnalités ⚙️
 
-Les contributions sont les bienvenues ! Veuillez suivre les étapes suivantes :
+### 1. **API Ecowatt** (RTE)
+L'API **Ecowatt** permet de connaître les pics d'utilisation du réseau électrique français ⚡. L'API effectue des requêtes sécurisées à l'API Ecowatt pour obtenir ces données, puis les stocke sous forme de fichier JSON (`ecowatt.json`).
 
-10. Forker le projet
-    
-11. Créer une branche (`feature-ma-fonctionnalité`)
-    
-12. Soumettre une pull request
-    
+### 2. **Délestage avec Phidget** 💡
+Le projet utilise le module **Phidget Interface Kit 0/0/8** pour contrôler des relais. Ces relais sont connectés à des LED représentant des systèmes consommateurs d'énergie. L'objectif est d'éteindre ces systèmes lorsque le réseau atteint des seuils de consommation critiques.
 
-## Licence
+### 3. **Sécurisation avec OAuth2** 🔐
+Les échanges avec les API sont sécurisés via **OAuth2**. Le serveur de base (dans `P3`) permet d'effectuer des requêtes authentifiées pour récupérer des informations depuis l'API **Ecowatt**, et pour gérer l'état des relais **Phidget** via des requêtes authentifiées.
 
-Ce projet est sous licence MIT.
+### 4. **Interface Web** 🌐
+Le projet inclut une interface web permettant de :
+- Effectuer des requêtes API vers un **Raspberry Pi** ou un **ESP**.
+- Contrôler l'état des relais **Phidget** à travers des interfaces de **délestage**.
 
-## Auteurs
+## Installation 🛠️
 
-- Teto et l'équipe du projet Arbok
+1. **Clonez** ce dépôt sur votre machine locale :
+   ```
+   git clone https://github.com/ton-utilisateur/Arbok.git
+   cd Arbok
+   ```
+
+2. Installez les **dépendances Python** nécessaires :
+   ```
+   pip install -r requirements.txt
+   ```
+
+3. Chargez le code sur les microcontrôleurs (**ESP32**, **Raspberry Pi**) à l'aide de l'IDE Arduino ou d'un autre outil adapté.
+
+4. Suivez les instructions dans `Oauth2onRaspberry.md` pour configurer **OAuth2** sur le **Raspberry Pi**.
+
+## Contribution 🤝
+
+Les contributions sont les bienvenues ! Pour suggérer des améliorations ou signaler des problèmes, ouvrez une **issue** ou soumettez une **pull request**.
+
+## Licence 📜
+
+Ce projet est sous licence **MIT**. Consultez le fichier [LICENSE](LICENSE) pour plus d'informations.

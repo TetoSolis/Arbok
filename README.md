@@ -4,7 +4,7 @@
 
 ## Arborescence du projet 📂
 
-nnn
+```
 Arbok/
 ├── API
 │   ├── P1
@@ -47,7 +47,7 @@ Arbok/
     ├── API.html                  # Interface web pour effectuer des requêtes API vers Raspberry Pi et ESP
     ├── delestage.html             # Interface pour contrôler le délestage des équipements
     └── style.css                  # Fichier CSS pour le style des pages web
-nnn
+```
 
 ## Description des fonctionnalités ⚙️
 
@@ -68,15 +68,15 @@ Le projet inclut une interface web permettant de :
 ## Installation 🛠️
 
 1. **Clonez** ce dépôt sur votre machine locale :
-   nnn
+   ```
    git clone https://github.com/ton-utilisateur/Arbok.git
    cd Arbok
-   nnn
+   ```
 
 2. Installez les **dépendances Python** nécessaires :
-   nnn
+   ```
    pip install -r requirements.txt
-   nnn
+   ```
 
 3. Chargez le code sur les microcontrôleurs (**ESP32**, **Raspberry Pi**) à l'aide de l'IDE Arduino ou d'un autre outil adapté.
 

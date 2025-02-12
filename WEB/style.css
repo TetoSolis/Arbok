@@ -85,12 +85,14 @@ body {
     width: 70%; /* Définit une largeur qui permet de centrer les éléments autour de 25% et 75% */
     margin: 0 auto; /* Centre le conteneur */
     position: relative;
+    margin-top: 2%;
 }
 
 .title2 {
     color: #3a3b3b;
     border-radius: 20px;
     padding: 2%;
+    margin-top: 5%;
     font-size: 4em;
     font-weight: bold;
     font-family: sans-serif;
@@ -99,10 +101,14 @@ body {
 }
 
 button {
+    padding: 1.5em 5em;
     background: #ecf0f3;
     border: none;
     border-radius: .5rem;
     color: #444;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .2rem;
     text-align: center;
     outline: none;
     cursor: pointer;
@@ -123,4 +129,9 @@ button {
                 inset -2px -2px 4px rgba(255, 255, 255, .5),
                 inset 2px 2px 2px rgba(255, 255, 255, .075),
                 inset 2px 2px 4px rgba(0, 0, 0, .15);
+  }
+
+  .flexing {
+    padding-left: 5%;
+    padding-right: 5%;
   }

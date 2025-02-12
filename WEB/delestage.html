@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neumorphism</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll("input[type='checkbox']").forEach((checkbox, index) => {
+                checkbox.addEventListener("change", function() {
+                    fetch("http://localhost:5000/toggle_relay", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ relay: index, state: this.checked })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur HTTP : ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => console.log("Réponse du serveur :", data))
+                    .catch(error => console.error("Erreur lors de la requête :", error));
+                });
+            });
+        });
+    </script>       
+    <div class="title">Relay Switches</div>
+    <div class="bar">.</div>
+    <div class="text-box">
+        <p class="gradient-text">0</p>
+        <p class="gradient-text">1</p>
+        <p class="gradient-text">2</p>
+        <p class="gradient-text">3</p>
+    </div>
+    <div class="box">
+        <input class="flexing" type="checkbox" name="check">
+        <input class="flexing" type="checkbox" name="check">
+        <input class="flexing" type="checkbox" name="check">
+        <input class="flexing" type="checkbox" name="check">
+    </div>
+    <div class="text-box">
+        <p class="gradient-text">4</p>
+        <p class="gradient-text">5</p>
+        <p class="gradient-text">6</p>
+        <p class="gradient-text">7</p>
+    </div>
+    <div class="box">
+        <input class="flexing" type="checkbox" name="check">
+        <input class="flexing" type="checkbox" name="check">
+        <input class="flexing" type="checkbox" name="check">
+        <input class="flexing" type="checkbox" name="check">
+    </div>
+</body>
+</html>

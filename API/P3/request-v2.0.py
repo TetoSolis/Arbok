@@ -34,7 +34,7 @@ else:
 token = infos_rte_token['access_token']
 #token = ''
 # URL de l'API Ecowatt
-url = "http://192.168.1.3:5000/"
+url = "http://192.168.1.3:5000/counter"
 
 # Headers corrigés
 headers = {

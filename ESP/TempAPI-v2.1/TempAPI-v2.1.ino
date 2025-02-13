@@ -10,7 +10,7 @@
 #define KEYCLOAK_URL "http://192.168.1.2:8080/realms/Abo/protocol/openid-connect/token"
 #define INTROSPECT_URL "http://192.168.1.2:8080/realms/Abo/protocol/openid-connect/token/introspect"
 #define CLIENT_ID "abra"
-#define CLIENT_SECRET "npJt8IhiugfKibw531qwLBUtTKPlBa5j"
+#define CLIENT_SECRET "qc3c05GiFknf1io0vAOAsOETpgGdOkSD"
 #define SCOPE "psyko"
 
 // Définition de l'IP statique

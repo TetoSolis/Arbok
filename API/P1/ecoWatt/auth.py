@@ -1,40 +1,28 @@
 import requests
+import json
 import time
 
-# URL de Keycloak
-url = "http://192.168.1.2:8080/realms/Abo/protocol/openid-connect/token"
-
-# Informations d'authentification
+url = "https://digital.iservices.rte-france.com/token/oauth"
 data = {
-    'grant_type': 'client_credentials',   # Type d'authentification
-    'client_id': 'abra',          # Client ID défini dans Keycloak
-    'client_secret': 'qc3c05GiFknf1io0vAOAsOETpgGdOkSD'  # Secret Keycloak récupéré dans Clients > Credentials
-}
-
-# En-têtes HTTP
-headers = {
+    'Authorization': 'Basic OTRlMDkyZjctMjYyYS00NTIwLWFmYTctNDcwNGJlYjAwNjEyOjVmNjYyMTY1LWQ2MDctNGI3Ny1hNjYzLTc0Y2U0NzRlMDc1ZA==',
     'Content-Type': 'application/x-www-form-urlencoded',
 }
-
-# Envoi de la requête
-response = requests.post(url, data=data, headers=headers)
-
-# Vérification du statut
-if response.status_code == 200:
-    infos_rte_token = response.json()
-    #print('infos RTE token = ', infos_rte_token)
-    print('Status code =', response.status_code)
-else:
-    print('Erreur, status code =', response.status_code)
-    print('Réponse:', response.text)
+response = requests.post(url, headers=data)
+status_code = response.status_code
+print('status code = ', status_code)
+infos_rte_token = response.json()
+print('infos RTE token = ', infos_rte_token)
+token = infos_rte_token['access_token']
+print('token = ',token)
 
 # Fichier où enregistrer les données
+file = "ecowatt.json"
 
 # Token d'accès (remplace par un token valide si nécessaire)
-token = infos_rte_token['access_token']
-#token = ''
+token = "466Cww165KVW6f1nohjMQwqmQWnUd2C7AXTOHQjcxRp7AcoRW9CMWX"
+
 # URL de l'API Ecowatt
-url = "http://192.168.1.3:5000/"
+url = "https://digital.iservices.rte-france.com/open_api/ecowatt/v5/signals"
 
 # Headers corrigés
 headers = {
@@ -43,15 +31,21 @@ headers = {
 }
 
 # Tentative avec gestion du 429 Too Many Requests
-max_retries = 1
+max_retries = 5
 retry_delay = 10  # Attendre 10 secondes en cas de 429
 for attempt in range(max_retries):
     response = requests.get(url, headers=headers)
-    print('Status code =', response.status_code)
+    
     if response.status_code == 200:
         try:
             infos_rte_data_ecowatt_json = response.json()
             print("Données reçues :", infos_rte_data_ecowatt_json)
+            
+            # Sauvegarde en fichier JSON
+            with open(file, "w") as f:
+                json.dump(infos_rte_data_ecowatt_json, f, indent=4)
+            print(f"Données sauvegardées dans {file}")
+            break
         
         except requests.exceptions.JSONDecodeError:
             print("Erreur: La réponse de l'API n'est pas un JSON valide.")
@@ -65,4 +59,3 @@ for attempt in range(max_retries):
     else:
         print(f"Erreur {response.status_code}: {response.text}")
         break
-    

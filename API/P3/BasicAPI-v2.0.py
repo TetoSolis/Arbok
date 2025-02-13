@@ -8,7 +8,7 @@ app = Flask(__name__)
 # Paramètres de configuration Keycloak
 KEYCLOAK_URL = "http://192.168.1.2:8080/realms/Abo/protocol/openid-connect/token"
 CLIENT_ID = "abra"
-CLIENT_SECRET = "lwGDExe8qiiKGDfM3FFA7hTmfA7W7qUU"
+CLIENT_SECRET = "qc3c05GiFknf1io0vAOAsOETpgGdOkSD"
 SCOPE = "psyko"
 
 # Variable globale pour maintenir le compteur

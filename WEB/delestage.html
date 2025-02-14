@@ -9,27 +9,49 @@
 <body>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            document.querySelectorAll("input[type='checkbox']").forEach((checkbox, index) => {
+            const checkboxes = document.querySelectorAll("input[type='checkbox']");
+            
+            // Fonction pour mettre à jour l'état des cases
+            function updateCheckboxStates() {
+                fetch("http://127.0.0.1:5000/get_relays_state")
+                    .then(response => response.json())
+                    .then(data => {
+                        checkboxes.forEach(checkbox => {
+                            const relayId = parseInt(checkbox.dataset.relay);
+                            checkbox.checked = data[relayId] || false;
+                        });
+                    })
+                    .catch(error => console.error("Erreur lors de la récupération des états :", error));
+            }
+
+            checkboxes.forEach(checkbox => {
                 checkbox.addEventListener("change", function() {
-                    fetch("http://localhost:5000/toggle_relay", {
+                    const relayId = parseInt(this.dataset.relay);
+                    fetch("http://127.0.0.1:5000/toggle_relay", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ relay: index, state: this.checked })
+                        body: JSON.stringify({ relay: relayId, state: this.checked })
                     })
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Erreur HTTP : ' + response.status);
-                        }
+                        if (!response.ok) throw new Error('Erreur HTTP : ' + response.status);
                         return response.json();
                     })
                     .then(data => console.log("Réponse du serveur :", data))
-                    .catch(error => console.error("Erreur lors de la requête :", error));
+                    .catch(error => {
+                        console.error("Erreur lors de la requête :", error);
+                        alert("Erreur de connexion au serveur !");
+                        this.checked = !this.checked; // Revenir à l’état précédent si la requête échoue
+                    });
                 });
             });
+
+            updateCheckboxStates(); // Charger l'état initial des relais
         });
-    </script>       
+    </script>
+
     <div class="title">Relay Switches</div>
     <div class="bar">.</div>
+
     <div class="text-box">
         <p class="gradient-text">0</p>
         <p class="gradient-text">1</p>
@@ -37,11 +59,12 @@
         <p class="gradient-text">3</p>
     </div>
     <div class="box">
-        <input class="flexing" type="checkbox" name="check">
-        <input class="flexing" type="checkbox" name="check">
-        <input class="flexing" type="checkbox" name="check">
-        <input class="flexing" type="checkbox" name="check">
+        <input class="flexing" type="checkbox" data-relay="0">
+        <input class="flexing" type="checkbox" data-relay="1">
+        <input class="flexing" type="checkbox" data-relay="2">
+        <input class="flexing" type="checkbox" data-relay="3">
     </div>
+
     <div class="text-box">
         <p class="gradient-text">4</p>
         <p class="gradient-text">5</p>
@@ -49,10 +72,10 @@
         <p class="gradient-text">7</p>
     </div>
     <div class="box">
-        <input class="flexing" type="checkbox" name="check">
-        <input class="flexing" type="checkbox" name="check">
-        <input class="flexing" type="checkbox" name="check">
-        <input class="flexing" type="checkbox" name="check">
+        <input class="flexing" type="checkbox" data-relay="4">
+        <input class="flexing" type="checkbox" data-relay="5">
+        <input class="flexing" type="checkbox" data-relay="6">
+        <input class="flexing" type="checkbox" data-relay="7">
     </div>
 </body>
 </html>

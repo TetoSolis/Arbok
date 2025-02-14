@@ -2,52 +2,105 @@ import requests
 import json
 import time
 import os
+import csv
+import math
 
-# Fichier où enregistrer les données
-file = "\\meteoFrance.json"
+# Déterminer le répertoire du script
 script_dir = os.path.dirname(os.path.abspath(__file__))
+json_file_path = os.path.join(script_dir, "meteoFrance.json")
 
-# Token d'accès (remplace par un token valide si nécessaire)
-token = "eyJ4NXQiOiJOelU0WTJJME9XRXhZVGt6WkdJM1kySTFaakZqWVRJeE4yUTNNalEyTkRRM09HRmtZalkzTURkbE9UZ3paakUxTURRNFltSTVPR1kyTURjMVkyWTBNdyIsImtpZCI6Ik56VTRZMkkwT1dFeFlUa3paR0kzWTJJMVpqRmpZVEl4TjJRM01qUTJORFEzT0dGa1lqWTNNRGRsT1RnelpqRTFNRFE0WW1JNU9HWTJNRGMxWTJZME13X1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ"
+# Fonction pour calculer la distance entre deux points (latitude, longitude) en km
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371  # Rayon de la Terre en km
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    return R * c
 
-# URL de l'API Ecowatt
-url = "https://public-api.meteofrance.fr:8280/public/DPObs/v1/liste-stations"
+# Charger les données JSON
+def load_meteo_data():
+    with open(json_file_path, 'r', encoding='utf-8') as json_file:
+        return json.load(json_file)
 
-# Headers corrigés
-headers = {
-    "Authorization": f"Bearer {token}",
-    "Accept": "*/*",  # Corrige le Content-Type pour demander du JSON
+# Trouver la station la plus proche
+def find_nearest_station(lat, lon):
+    stations = load_meteo_data()
+    nearest_station = min(stations, key=lambda station: haversine(lat, lon, station["latitude"], station["longitude"]))
+    return nearest_station
+
+# Coordonnées à rechercher
+latitude = 47.49520
+longitude = 6.802791
+nearest = find_nearest_station(latitude, longitude)
+print(f"Station la plus proche : {nearest}")
+
+# URL pour obtenir le token
+url_token = "https://portail-api.meteofrance.fr/token"
+
+data_token = {'grant_type': 'client_credentials'}
+headers_token = {
+    'Authorization': 'Basic UGNaSkd4SU9fN3NQSHRNcHJjTENmWnM4M0dBYTp3R25PV1BmM1JkTHlNM2tyWGZQOTdGdFRjajBh',
+    'Content-Type': 'application/x-www-form-urlencoded'
 }
 
-# Tentative avec gestion du 429 Too Many Requests
+response_token = requests.post(url_token, data=data_token, headers=headers_token)
+status_code = response_token.status_code
+print('status code =', status_code)
+
+if status_code == 200:
+    infos_meteo_token = response_token.json()
+    token_meteo = infos_meteo_token['access_token']
+    print('Token Météo France =', token_meteo)
+else:
+    print(f"Erreur lors de la récupération du token : {response_token.text}")
+    exit()
+
+token = infos_meteo_token['access_token']
+url = "https://public-api.meteofrance.fr/public/DPObs/v1/liste-stations"
+
+headers = {
+    "Authorization": f"Bearer {token}",
+    "Accept": "application/json",
+}
+
 max_retries = 1
-retry_delay = 10  # Attendre 10 secondes en cas de 429
+retry_delay = 10
 for attempt in range(max_retries):
-    response = requests.get(url, headers=headers, timeout=10)
-    
+    response = requests.get(url, headers=headers)
+    print('Status code =', response.status_code)
     if response.status_code == 200:
         try:
-            infos_rte_data_ecowatt_json = response.json()
-            print("Données reçues :", infos_rte_data_ecowatt_json)
+            csv_data = response.text.splitlines()
+            csv_reader = csv.reader(csv_data, delimiter=';')
             
-            # Sauvegarde en fichier JSON
-            with open(script_dir+file, "w") as f:
-                json.dump(infos_rte_data_ecowatt_json, f, indent=4)
-            print(f"Données sauvegardées dans {file}")
+            json_data = []
+            next(csv_reader, None)  # Ignorer la première ligne (en-têtes)
+            
+            for row in csv_reader:
+                station = {
+                    "id": row[0],
+                    "wmo": row[1] if row[1] else None,
+                    "name": row[2],
+                    "latitude": float(row[3]),
+                    "longitude": float(row[4]),
+                    "altitude": int(row[5]),
+                    "start_date": row[6],
+                    "type": row[7]
+                }
+                json_data.append(station)
+            
+            # Sauvegarde dans un fichier JSON
+            with open(json_file_path, 'w', encoding='utf-8') as json_file:
+                json.dump(json_data, json_file, indent=4, ensure_ascii=False)
+            print(f"Données enregistrées dans {json_file_path}")
             break
-        
-        except requests.exceptions.JSONDecodeError:
-            print("Erreur: La réponse de l'API n'est pas un JSON valide.")
-            print("Réponse brute:", response.text)
-            break  # Sortir de la boucle car ce n'est pas un problème de rate limit
-
+        except Exception as e:
+            print("Erreur lors du traitement du CSV:", e)
+            break
     elif response.status_code == 429:
         print(f"Erreur 429: Trop de requêtes. Tentative {attempt + 1}/{max_retries}. Réessai dans {retry_delay} sec...")
         time.sleep(retry_delay)
-    
     else:
         print(f"Erreur {response.status_code}: {response.text}")
         break
-    
-    
-curl -X 'GET' 'http://public-api.meteofrance.fr:8280/public/DPObs/v1/liste-stations' 'accept: */*' -H 'Authorization: Bearer eyJ4NXQiOiJOelU0WTJJME9XRXhZVGt6WkdJM1kySTFaakZqWVRJeE4yUTNNalEyTkRRM09HRmtZalkzTURkbE9UZ3paakUxTURRNFltSTVPR1kyTURjMVkyWTBNdyIsImtpZCI6Ik56VTRZMkkwT1dFeFlUa3paR0kzWTJJMVpqRmpZVEl4TjJRM01qUTJORFEzT0dGa1lqWTNNRGRsT1RnelpqRTFNRFE0WW1JNU9HWTJNRGMxWTJZME13X1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI4N2ZkNmViZC1hNzc0LTRhMjctOTc1Ny0wMzgzNDhjMWU3NzAiLCJhdXQiOiJBUFBMSUNBVElPTiIsImF1ZCI6IlBjWkpHeElPXzdzUEh0TXByY0xDZlpzODNHQWEiLCJuYmYiOjE3Mzk0Mzc4MTcsImF6cCI6IlBjWkpHeElPXzdzUEh0TXByY0xDZlpzODNHQWEiLCJzY29wZSI6ImRlZmF1bHQiLCJpc3MiOiJodHRwczpcL1wvcG9ydGFpbC1hcGkubWV0ZW9mcmFuY2UuZnJcL29hdXRoMlwvdG9rZW4iLCJleHAiOjE3Mzk0NDE0MTcsImlhdCI6MTczOTQzNzgxNywianRpIjoiZTQyMzc2ZTctNDkwNy00YTYzLWJhNGItNjVmNmJhYWIyYmFmIiwiY2xpZW50X2lkIjoiUGNaSkd4SU9fN3NQSHRNcHJjTENmWnM4M0dBYSJ9.Unl6DPDS8pBZol0CUr3TmiMrXUJ0GGUNRMEG6YVjrRCp6koMdcBnM2_-L97XYBeCN-JBuUBaeIf6lwp2xsxqXofcBtL0X64S61iY42w6fJOKV8oT6O2W2wdTRaVmyWx0KignuT-foeGC2y6ex0izGSPrOmCulgZ8CEmJn7tbrMClpOvRjoM0khTsn1ssRZaSIjlp7jM1bGOrl72lVvEqvZ-O-r4lMAy1gfJelRBVXp23AaqertCU3J2cID727u04cNGHiBvrZfnj43kRHvFt5-9156w0BwrOXvNSLiv3fWyoWhor8PZqBZdJx5A8l3JM-OMrH-DLfs3_XKgb3H1FvQ'

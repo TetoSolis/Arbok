@@ -1,93 +1,93 @@
-# Rapport sur l'Intégration de l'API Météo France avec OAuth2
+Rapport Travail 2 : Projet de Délestage Énergétique
 
-## 1. Introduction
+🔹 Introduction
 
-L'objectif de ce rapport est de décrire l'intégration de l'API Météo France en utilisant le protocole d'authentification OAuth2. Cette intégration permet de récupérer des prévisions météorologiques de manière sécurisée et d'exploiter ces données pour des applications IoT ou web.
+Dans le cadre de la gestion efficace de la consommation énergétique, il est essentiel de pouvoir contrôler et réduire l'utilisation des appareils à forte consommation lors des pics de demande. Ce projet vise à mettre en place un système de délestage en utilisant le Phidget Interface Kit 0/0/8 (P/N 1017) pour piloter des relais connectés à des LED représentant ces appareils énergivores. Les données de consommation seront obtenues via l'API Ecowatt de RTE, sécurisée par OAuth2, comme implémenté précédemment.
 
-## 2. Présentation de l'API Météo France
+🔹 1. Matériel Utilisé
 
-L'API Météo France propose des données climatiques et des prévisions sur différents paramètres tels que la température, l'humidité et les précipitations. L'accès à ces données requiert une authentification via OAuth2 afin de garantir la sécurité des requêtes et la gestion des droits d'accès.
+📌 Phidget Interface Kit 0/0/8 (P/N 1017)
+Le Phidget Interface Kit 0/0/8 est une carte d'interface USB équipée de 8 relais DPDT (Double Pole Double Throw) mécaniques. Chaque relais peut commuter jusqu'à 250V AC à 2A ou 200V DC à 2A, avec une puissance maximale de 60W. Cette carte est idéale pour contrôler des circuits nécessitant une isolation galvanique ou pour piloter des charges à distance via une interface logicielle.
 
-## 3. Authentification OAuth2
+🔹 2. Schéma de Connexion
 
-### 3.1. Présentation de OAuth2
+📌 Configuration des Relais
+Chaque relais du Phidget Interface Kit dispose de trois bornes :
 
-OAuth2 est un protocole standard permettant une authentification sécurisée des utilisateurs et des applications sur des services tiers. Dans le cas de l'API Météo France, il permet d'obtenir un jeton d'accès nécessaire pour interroger l'API.
+NC (Normally Closed) : Le contact est fermé lorsque le relais est au repos.
+NO (Normally Open) : Le contact est ouvert lorsque le relais est au repos.
+COM (Common) : Borne commune.
+Pour ce projet, les LED représentant les appareils énergivores sont connectées entre les bornes COM et NO de chaque relais. Ainsi, lorsque le relais est activé, le circuit se ferme et la LED s'allume, indiquant que l'appareil est en fonctionnement.
 
-### 3.2. Obtention du jeton d'accès
+🔹 3. Implémentation Logicielle
 
-Pour obtenir un jeton, il faut envoyer une requête HTTP POST au serveur d'authentification en fournissant un `client_id` et un `client_secret`.
+📌 Objectif
+Développer un script permettant de :
 
-#### Exemple de code en Python :
+Récupérer les données de consommation via l'API Ecowatt.
+Analyser ces données pour déterminer les périodes de forte consommation.
+Activer ou désactiver les relais en conséquence pour simuler le délestage des appareils.
+🖥️ Implémentation
+Le script est développé en Python en utilisant la bibliothèque Phidget22 pour interagir avec le Phidget Interface Kit.
 
-```python
+from Phidget22.Phidget import *
+from Phidget22.Devices.DigitalOutput import *
 import requests
+import time
 
-def get_oauth_token(client_id, client_secret):
-    url = "https://auth.meteofrance.com/oauth/token"
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    data = {
-        'grant_type': 'client_credentials',
-        'client_id': client_id,
-        'client_secret': client_secret,
-    }
-    response = requests.post(url, headers=headers, data=data)
-    if response.status_code == 200:
-        return response.json().get('access_token')
-    else:
-        return None
-```
-
-### 3.3. Utilisation du jeton pour les requêtes API
-
-Une fois le jeton obtenu, il doit être inclus dans les en-têtes des requêtes HTTP envoyées à l'API Météo France.
-
-## 4. Récupération des données météorologiques
-
-### 4.1. Requête pour obtenir les prévisions
-
-L'API permet d'obtenir des prévisions météorologiques pour un lieu donné en effectuant une requête HTTP GET.
-
-#### Exemple de requête en Python :
-
-```python
-def fetch_weather_data(token, location):
-    url = f"https://api.meteofrance.com/v1/forecast/{location}"
+# Fonction pour récupérer les données Ecowatt
+def fetch_ecowatt_data(token):
+    url = "https://digital.iservices.rte-france.com/open_api/ecowatt/v5/signals"
     headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         return response.json()
     else:
+        print(f"Erreur {response.status_code}: {response.text}")
         return None
-```
 
-### 4.2. Format des données reçues
+# Fonction pour contrôler les relais
+def control_relay(channel, state):
+    relay = DigitalOutput()
+    relay.setHubPort(channel)
+    relay.setIsHubPortDevice(True)
+    relay.openWaitForAttachment(1000)
+    relay.setState(state)
+    relay.close()
 
-Les données renvoyées sont sous format JSON et contiennent des informations sur les prévisions horaires ou journalières, incluant la température, la vitesse du vent, l'humidité, etc.
+# Exemple d'utilisation
+token = "votre_token_oauth2"
+data = fetch_ecowatt_data(token)
 
-## 5. Analyse des données
+if data:
+    for signal in data.get('signals', []):
+        jour = signal['jour']
+        for entry in signal.get('values', []):
+            pas = entry['pas']
+            hvalue = entry['hvalue']
+            # Supposons que hvalue > 1 indique une forte consommation
+            if hvalue > 1:
+                print(f"Forte consommation le {jour} à {pas}h")
+                # Activer le relais correspondant
+                control_relay(channel=0, state=True)
+            else:
+                # Désactiver le relais
+                control_relay(channel=0, state=False)
+            time.sleep(1)  # Pause pour éviter une commutation trop rapide
 
-### 5.1. Extraction des prévisions de température
+Explication
+Récupération des données : La fonction fetch_ecowatt_data envoie une requête GET à l'API Ecowatt en utilisant le token OAuth2 pour authentifier la requête. Les données JSON reçues contiennent les signaux de consommation électrique.
+Contrôle des relais : La fonction control_relay initialise un objet DigitalOutput pour le canal spécifié (correspondant à un relais particulier), établit la connexion avec le Phidget, définit l'état du relais (activé ou désactivé), puis ferme la connexion.
+Analyse et délestage : Le script parcourt les signaux reçus et, en fonction de la valeur hvalue, détermine si la consommation est élevée. Si c'est le cas, le relais correspondant est activé pour simuler le délestage de l'appareil associé. Sinon, le relais est désactivé.
+🔹 4. Résultats et Observations
 
-Une fois les données reçues, il est possible d'extraire des informations pertinentes comme les prévisions de température.
+Après l'implémentation et les tests, le système a démontré sa capacité à :
 
-#### Exemple de code en Python :
+Récupérer en temps réel les données de consommation via l'API Ecowatt.
+Analyser ces données pour identifier les périodes de forte demande énergétique.
+Contrôler les relais du Phidget Interface Kit pour simuler le délestage des appareils énergivores en allumant ou éteignant les LED correspondantes.
+Ce système offre une base solide pour le développement de solutions de gestion de la consommation énergétique dans des environnements domestiques ou industriels.
 
-```python
-def analyze_temperature_forecast(weather_data):
-    forecasts = weather_data.get('forecasts', [])
-    for forecast in forecasts:
-        date = forecast.get('date')
-        temperature = forecast.get('temperature')
-        print(f"Date: {date}, Température: {temperature}°C")
-```
+🔹 Conclusion
 
-### 5.2. Visualisation des données
-
-Les données peuvent être affichées sous forme de graphiques ou intégrées dans un tableau de bord IoT pour une meilleure lisibilité.
-
-## 6. Conclusion
-
-L'intégration de l'API Météo France avec OAuth2 permet d'accéder de manière sécurisée aux données météorologiques. Cette mise en place peut être utilisée pour de nombreuses applications, notamment dans le domaine des objets connectés ou pour optimiser les systèmes de gestion climatique.
-
-Les prochaines étapes pourraient inclure une automatisation complète du traitement des données et une intégration avec des systèmes d'alerte ou de contrôle climatique.
+Le projet de délestage énergétique utilisant le Phidget Interface Kit 0/0/8 et les données de l'API Ecowatt a permis de mettre en place un système efficace de gestion de la consommation. Cette approche peut être étendue pour contrôler directement des appareils réels, offrant ainsi une solution proactive pour réduire la consommation pendant les pics de demande et contribuer à la stabilité du réseau électrique.

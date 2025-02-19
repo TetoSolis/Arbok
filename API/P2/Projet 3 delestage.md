@@ -1,6 +1,6 @@
 # Rapport Travail 2 : Projet de Délestage Énergétique
 
-🔹 Introduction
+## 🔹 Introduction
 
 Dans le cadre de la gestion efficace de la consommation énergétique, il est essentiel de pouvoir contrôler et réduire l'utilisation des appareils à forte consommation lors des pics de demande. Ce projet vise à mettre en place un système de délestage en utilisant le Phidget Interface Kit 0/0/8 (P/N 1017) pour piloter des relais connectés à des LED représentant ces appareils énergivores. Les données de consommation seront obtenues via l'API Ecowatt de RTE, sécurisée par OAuth2, comme implémenté précédemment.
 

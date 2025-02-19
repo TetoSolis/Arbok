@@ -1,4 +1,4 @@
-Rapport Travail 2 : Projet de Délestage Énergétique
+#Rapport Travail 2 : Projet de Délestage Énergétique
 
 🔹 Introduction
 
@@ -29,7 +29,7 @@ Analyser ces données pour déterminer les périodes de forte consommation.
 Activer ou désactiver les relais en conséquence pour simuler le délestage des appareils.
 🖥️ Implémentation
 Le script est développé en Python en utilisant la bibliothèque Phidget22 pour interagir avec le Phidget Interface Kit.
-
+```
 from Phidget22.Phidget import *
 from Phidget22.Devices.DigitalOutput import *
 import requests
@@ -74,7 +74,7 @@ if data:
                 # Désactiver le relais
                 control_relay(channel=0, state=False)
             time.sleep(1)  # Pause pour éviter une commutation trop rapide
-
+```
 Explication
 Récupération des données : La fonction fetch_ecowatt_data envoie une requête GET à l'API Ecowatt en utilisant le token OAuth2 pour authentifier la requête. Les données JSON reçues contiennent les signaux de consommation électrique.
 Contrôle des relais : La fonction control_relay initialise un objet DigitalOutput pour le canal spécifié (correspondant à un relais particulier), établit la connexion avec le Phidget, définit l'état du relais (activé ou désactivé), puis ferme la connexion.

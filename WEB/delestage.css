@@ -1,0 +1,93 @@
+:root {
+    --colorMain: #f1f1f1;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #ecf0f3;
+}
+
+.box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5%;
+}
+
+.box input[type="checkbox"] {
+    width: 175px;
+    height: 70px;
+    -webkit-appearance: none;
+    border-radius: 50px;
+    border: 10px solid #ecf0f3;
+    cursor: pointer;
+    outline: none;
+    position: relative;
+    box-shadow: inset 5px 5px 10px #D1D9E6, inset -5px -5px 10px #fff;
+}
+
+.box input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 7px;
+    margin: auto;
+    transition: all .3s;
+    width: 85px;
+    height: 40px;
+    border-radius: 50px;
+    background: #da2b2b;
+}
+
+.box input[type="checkbox"]:checked:before {
+    left: 62px;
+    background: #59e86a;
+}
+
+.title {
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    border-radius: 20px;
+    padding-bottom: 1%;
+    padding-top: 1%;
+    margin: 3%;
+    margin-left: 20%;
+    margin-right: 20%;
+    color: #3a3b3b;
+    font-size: 5em;
+    font-weight: bold;
+    font-family: sans-serif;
+    box-shadow: 5px 5px 10px #D1D9E6, -5px -5px 10px #fff;
+}
+
+button {
+    background: #ecf0f3;
+    border: none;
+    border-radius: .5rem;
+    cursor: pointer;
+    transition: .2s ease-in-out;
+}
+
+.styled-table {
+    width: 80% auto;
+    margin: 2% auto;
+    border-collapse: collapse;
+    background: #ecf0f3;
+    border-radius: 10px;
+    font-family: sans-serif;
+    color: #3a3b3b;
+}
+
+.styled-table th, .styled-table td {
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+}
+.styled-table th {
+    padding-left: 10%;
+    padding-right: 10%;
+    padding-bottom: 5%;
+}

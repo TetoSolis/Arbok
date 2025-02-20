@@ -1,5 +1,4 @@
 import requests
-import json
 import time
 
 # Date fixe : 13 février 2025 à 15h00

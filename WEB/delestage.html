@@ -1,81 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neumorphism</title>
-    <link rel="stylesheet" href="style.css">
+    <title>EcoWatt Control</title>
+    <script defer src="script.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background-color: #f4f4f4; }
+        h1 { color: #4CAF50; margin-top: 20px; }
+        h2 { color: #555; }
+        .container { margin: 20px auto; padding: 20px; max-width: 900px; background: #fff; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .hidden { display: none; }
+        button { margin: 5px; padding: 12px 20px; font-size: 16px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 5px; transition: background-color 0.3s; }
+        button:hover { background-color: #45a049; }
+        #ecowattData pre { background-color: #eee; padding: 10px; border-radius: 5px; text-align: left; white-space: pre-wrap; word-wrap: break-word; }
+        .relay-btn { background-color: #2196F3; color: white; }
+        .relay-btn.active { background-color: #f44336; }
+        .relay-btn:hover { background-color: #1976D2; }
+        .mode-toggle { font-size: 18px; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const checkboxes = document.querySelectorAll("input[type='checkbox']");
-            
-            // Fonction pour mettre à jour l'état des cases
-            function updateCheckboxStates() {
-                fetch("http://127.0.0.1:5000/get_relays_state")
-                    .then(response => response.json())
-                    .then(data => {
-                        checkboxes.forEach(checkbox => {
-                            const relayId = parseInt(checkbox.dataset.relay);
-                            checkbox.checked = data[relayId] || false;
-                        });
-                    })
-                    .catch(error => console.error("Erreur lors de la récupération des états :", error));
-            }
+    <h1>EcoWatt Control</h1>
+    <div class="container">
+        <button id="toggleMode" class="mode-toggle">Mode: Automatique</button>
+        <div id="autoMode" class="container">
+            <h2>Mode Automatique</h2>
+            <button id="refreshData">Rafraîchir les données</button>
+            <div id="ecowattData"></div>
+        </div>
 
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener("change", function() {
-                    const relayId = parseInt(this.dataset.relay);
-                    fetch("http://127.0.0.1:5000/toggle_relay", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ relay: relayId, state: this.checked })
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Erreur HTTP : ' + response.status);
-                        return response.json();
-                    })
-                    .then(data => console.log("Réponse du serveur :", data))
-                    .catch(error => {
-                        console.error("Erreur lors de la requête :", error);
-                        alert("Erreur de connexion au serveur !");
-                        this.checked = !this.checked; // Revenir à l’état précédent si la requête échoue
-                    });
-                });
-            });
+        <button id="refreshRelayState">Rafraîchir l'état du relais 0</button>
+        <p id="relayState">État actuel : Non récupéré</p>
 
-            updateCheckboxStates(); // Charger l'état initial des relais
-        });
-    </script>
+        <div id="manualMode" class="container hidden">
+            <h2>Mode Manuel</h2>
+            <div id="relays">
+                <input class="relay-btn" type="checkbox" data-relay="0">
+                <input class="relay-btn" type="checkbox" data-relay="1">
+                <input class="relay-btn" type="checkbox" data-relay="2">
+                <input class="relay-btn" type="checkbox" data-relay="3">
+                <input class="relay-btn" type="checkbox" data-relay="4">
+                <input class="relay-btn" type="checkbox" data-relay="5">
+                <input class="relay-btn" type="checkbox" data-relay="6">
+                <input class="relay-btn" type="checkbox" data-relay="7">
+            </div>
+        </div>
 
-    <div class="title">Relay Switches</div>
-    <div class="bar">.</div>
-
-    <div class="text-box">
-        <p class="gradient-text">0</p>
-        <p class="gradient-text">1</p>
-        <p class="gradient-text">2</p>
-        <p class="gradient-text">3</p>
-    </div>
-    <div class="box">
-        <input class="flexing" type="checkbox" data-relay="0">
-        <input class="flexing" type="checkbox" data-relay="1">
-        <input class="flexing" type="checkbox" data-relay="2">
-        <input class="flexing" type="checkbox" data-relay="3">
-    </div>
-
-    <div class="text-box">
-        <p class="gradient-text">4</p>
-        <p class="gradient-text">5</p>
-        <p class="gradient-text">6</p>
-        <p class="gradient-text">7</p>
-    </div>
-    <div class="box">
-        <input class="flexing" type="checkbox" data-relay="4">
-        <input class="flexing" type="checkbox" data-relay="5">
-        <input class="flexing" type="checkbox" data-relay="6">
-        <input class="flexing" type="checkbox" data-relay="7">
+        <div id="ecowattData">
+            <table id="ecowattTable">
+                <thead>
+                    <tr>
+                        <th>GenerationFichier</th>
+                        <th>Jour</th>
+                        <th>Message</th>
+                        <th>dvalue</th>
+                        <th>Pas</th>
+                        <th>Hvalue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Les données seront insérées ici -->
+                </tbody>
+            </table>
+        </div>
     </div>
 </body>
 </html>

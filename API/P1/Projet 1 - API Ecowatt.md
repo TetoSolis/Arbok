@@ -144,3 +144,73 @@ Ce travail nous a permis de mettre en place une **authentification sécurisée**
 - Analyse et extraction des périodes critiques.
 
 🚀 **Prochaine étape :** Intégration du délestage énergétique avec Phidget !
+
+
+***
+
+# Sommaire : Intégration des APIs Ecowatt et Météo France avec OAuth2
+
+## 1. Introduction
+
+- Présentation du projet
+- Objectifs de l'intégration
+
+## 2. Authentification OAuth2
+
+- Principe de fonctionnement
+- Obtention du token d'accès
+- Gestion des erreurs d'authentification
+
+## 3. Récupération des données des APIs
+
+- API Ecowatt
+    - Requête et format des données
+    - Gestion des quotas et erreurs
+- API Météo France
+    - Requête et format des données
+    - Gestion des quotas et erreurs
+
+## 4. Sécurisation des échanges
+
+- Importance de l'authentification OAuth2
+- Bonnes pratiques en matière de sécurité
+
+## 5. Analyse et exploitation des données
+
+- Structuration et stockage des données
+- Traitement et affichage des informations
+
+## 6. Explication du code
+
+- Étapes principales du script
+- Présentation du code source
+- Gestion des erreurs et optimisation
+
+## 7. Conclusion
+
+- Résumé des résultats obtenus
+- Améliorations possibles et perspectives d'évolution
+***
+### Présentation du projet
+
+L'objectif de ce projet est d'intégrer les APIs Ecowatt de RTE et les Données d'observations de Météo France dans un système permettant d'obtenir des informations en temps réel sur la consommation électrique et les conditions météorologiques. Ces données sont essentielles pour anticiper les pics de consommation, optimiser l'utilisation de l'énergie et développer des solutions intelligentes de gestion des ressources.
+
+### Objectifs de l'intégration
+
+L'intégration de ces APIs vise plusieurs objectifs clés :
+
+- **Automatiser la collecte des données** : Mettre en place des scripts permettant de récupérer régulièrement les informations fournies par les services Ecowatt et Météo France.
+    
+- **Assurer une authentification sécurisée** : Utiliser le protocole OAuth2 pour garantir la sécurité des échanges et prévenir les accès non autorisés.
+    
+- **Faciliter l'analyse des données** : Stocker et traiter les informations collectées afin de les exploiter efficacement, notamment pour identifier les tendances et prévoir les situations critiques.
+    
+- **Garantir la robustesse et la fiabilité** : Implémenter une gestion des erreurs efficace pour assurer la continuité du service et éviter les interruptions dues aux limites d'utilisation des APIs.
+
+## 2. Authentification OAuth2
+
+Le protocole OAuth2 est une norme d'authentification et d'autorisation permettant aux applications d'accéder à des ressources protégées sans exposer les informations sensibles des utilisateurs. Il repose sur l'émission de jetons d'accès (access tokens) utilisés pour authentifier les requêtes envoyées aux serveurs des APIs.
+
+Pour obtenir un token d'accès, une application doit envoyer une requête d'authentification à un serveur OAuth2 en fournissant ses identifiants (client ID et client secret). Une fois vérifiés, le serveur renvoie un token d'accès que l'application peut utiliser pour interagir avec l'API cible. Ce token a une durée de vie limitée et doit être renouvellé périodiquement.
+
+![[schema-OAuth2.jpg]]

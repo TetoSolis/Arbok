@@ -5,6 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const refreshDataBtn = document.getElementById("refreshData");
     const ecowattDataDiv = document.getElementById("ecowattData");
     const relayButtons = document.querySelectorAll(".relay-btn");
+    const checkboxes = document.querySelectorAll(".hvalue-checkbox");
+    const refreshStateBtn = document.getElementById("refreshRelayState");
+    const relayStateText = document.getElementById("relayState");
 
     let currentMode = "auto";
 
@@ -48,6 +51,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     toggleModeBtn.addEventListener("click", toggleMode);
 
+    refreshStateBtn.addEventListener("click", async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:8000/get_relays_state");
+            if (!response.ok) {
+                throw new Error("Erreur lors de la récupération de l'état du relais");
+            }
+
+            const data = await response.json();
+            const relayState = data[1];  // Récupère l'état du relais 0 (ou plusieurs relais selon la structure de la réponse)
+
+            relayStateText.textContent = `État actuel du relais 1 : ${relayState ? 'Allumé' : 'Éteint'}`;
+        } catch (error) {
+            console.error("Erreur lors du rafraîchissement de l'état du relais:", error);
+            relayStateText.textContent = `Erreur : ${error.message}`;
+        }
+    });
+
     async function fetchRelayStates() {
         try {
             const response = await fetch("http://127.0.0.1:8000/get_relays_state");
@@ -82,18 +102,57 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // Ajout des événements pour les checkboxes
+
+    function attachHvalueCheckboxListeners() {
+        const checkboxes = document.querySelectorAll(".hvalue-checkbox");
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener("change", async (e) => {
+                const signal = e.target.dataset.signal;
+                const pas = e.target.dataset.value;
+                const newState = e.target.checked ? 1 : 0;
+
+                try {
+                    const response = await fetch("http://127.0.0.1:8000/update_hvalue", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            signal: signal,
+                            pas: pas,
+                            hvalue: newState
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Erreur lors de la mise à jour de hvalue");
+                    }
+
+                    console.log(`hvalue mis à jour: signal=${signal}, pas=${pas}, hvalue=${newState}`);
+                } catch (error) {
+                    console.error("Erreur lors de la mise à jour de hvalue:", error);
+                }
+            });
+        });
+    }
+
     async function fetchEcowattData() {
         try {
             const response = await fetch("http://127.0.0.1:8000/ecowatt");
-            if (!response.ok) throw new Error("Erreur lors de la récupération des données EcoWatt");
+            if (!response.ok) {
+                throw new Error("Erreur lors de la récupération des données EcoWatt");
+            }
             const data = await response.json();
             const signals = data.data.signals;
+
+            // Création du tableau des données
             const tableBody = document.querySelector("#ecowattTable tbody");
-            tableBody.innerHTML = "";
+            tableBody.innerHTML = ""; // Clear previous data
 
             signals.forEach(signal => {
                 signal.values.forEach(value => {
                     const row = document.createElement("tr");
+
                     row.innerHTML = `
                         <td>${signal.GenerationFichier}</td>
                         <td>${signal.jour}</td>
@@ -105,10 +164,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     tableBody.appendChild(row);
                 });
             });
+
+            // Réattache les écouteurs après mise à jour du DOM
+            attachHvalueCheckboxListeners();
         } catch (error) {
-            console.error(error);
-            ecowattDataDiv.innerHTML = `<pre>Erreur: ${error.message}</pre>`;
+            console.error("Erreur lors de la récupération des données EcoWatt:", error);
         }
+
     }
 
     refreshDataBtn.addEventListener("click", async () => {
@@ -118,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("Erreur lors du rafraîchissement des données:", error);
         }
+        fetchRelayStates
     });
 
     // Fonction pour contrôler le relais
@@ -135,7 +198,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    fetchEcowattData();
     fetchCurrentMode();
     fetchRelayStates();
-    setInterval(fetchEcowattData, 3600000);
+    setInterval(fetchEcowattData, 1000000);
 });

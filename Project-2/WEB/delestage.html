@@ -5,34 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EcoWatt Control</title>
     <script defer src="script.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background-color: #f4f4f4; }
-        h1 { color: #4CAF50; margin-top: 20px; }
-        h2 { color: #555; }
-        .container { margin: 20px auto; padding: 20px; max-width: 900px; background: #fff; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        .hidden { display: none; }
-        button { margin: 5px; padding: 12px 20px; font-size: 16px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 5px; transition: background-color 0.3s; }
-        button:hover { background-color: #45a049; }
-        #ecowattData pre { background-color: #eee; padding: 10px; border-radius: 5px; text-align: left; white-space: pre-wrap; word-wrap: break-word; }
-        .relay-btn { background-color: #2196F3; color: white; }
-        .relay-btn.active { background-color: #f44336; }
-        .relay-btn:hover { background-color: #1976D2; }
-        .mode-toggle { font-size: 18px; margin-bottom: 20px; }
-    </style>
+    <link rel="stylesheet" href="delestage.css">
 </head>
 <body>
     <h1>EcoWatt Control</h1>
     <div class="container">
         <button id="toggleMode" class="mode-toggle">Mode: Automatique</button>
-        <div id="autoMode" class="container">
+        <div id="autoMode" class="useless">
             <h2>Mode Automatique</h2>
             <button id="refreshData">Rafraîchir les données</button>
             <div id="ecowattData"></div>
         </div>
-
-        <button id="refreshRelayState">Rafraîchir l'état du relais 0</button>
-        <p id="relayState">État actuel : Non récupéré</p>
-
+        <div>
+            <button id="refreshRelayState">Rafraîchir l'état du relais 1</button>
+            <p id="relayState">État actuel : Non récupéré</p>
+        </div>
         <div id="manualMode" class="container hidden">
             <h2>Mode Manuel</h2>
             <div id="relays">

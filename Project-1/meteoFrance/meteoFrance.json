@@ -717,7 +717,7 @@
         "longitude": 6.728,
         "altitude": 1825,
         "start_date": "2007-07-05",
-        "type": "ETENDU"
+        "type": "RADOME"
     },
     {
         "id": "05027001",
@@ -777,7 +777,7 @@
         "longitude": 6.079833,
         "altitude": 885,
         "start_date": "2003-12-01",
-        "type": "ETENDU"
+        "type": "RADOME"
     },
     {
         "id": "05063402",
